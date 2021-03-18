@@ -248,6 +248,8 @@ namespace DistillNET
             List<string> applicableDomains = new List<string>();
             List<string> exceptionDomains = new List<string>();
 
+            string cspOption = null;
+
             // Trim off the leading "@@" chracters if it's an exception.
             if(isException)
             {   
@@ -281,7 +283,22 @@ namespace DistillNET
                         domainsOption = allOptions[i];
                         allOptions[i] = string.Empty;
 
-                        if(refererOption != null)
+                        if(refererOption != null && cspOption != null)
+                        {
+                            // No sense in scanning further when everything we could possibly need
+                            // has been captured out of this loop.
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    if(allOptions[i].Length > 4 && allOptions[i][0] == 'c' && allOptions[i][3] == '=')
+                    {
+                        cspOption = allOptions[i].Substring(4);
+                        allOptions[i] = string.Empty;
+
+                        if(refererOption != null && domainsOption != null)
                         {
                             // No sense in scanning further when everything we could possibly need
                             // has been captured out of this loop.
@@ -297,7 +314,7 @@ namespace DistillNET
                         refererOption = allOptions[i];
                         allOptions[i] = string.Empty;
 
-                        if(domainsOption != null)
+                        if(domainsOption != null && cspOption != null)
                         {
                             // No sense in scanning further when everything we could possibly need
                             // has been captured out of this loop.
@@ -534,7 +551,7 @@ namespace DistillNET
                 compiledParts.Add(new UrlFilter.StringLiteralFragment(rule.Substring(lastCol), enumOptions.HasFlag(UrlFilter.UrlFilterOptions.MatchCase)));
             }
 
-            return new UrlFilter(originalRuleCopy, compiledParts, enumOptions, applicableDomains, exceptionDomains, applicableReferers, exceptReferers, isException, categoryId);
+            return new UrlFilter(originalRuleCopy, compiledParts, enumOptions, applicableDomains, exceptionDomains, applicableReferers, exceptReferers, cspOption, isException, categoryId);
         }
     }
 }

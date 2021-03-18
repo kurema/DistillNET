@@ -662,6 +662,15 @@ namespace DistillNET
         } = UrlFilterOptions.None;
 
         /// <summary>
+        /// The Content Security Policy option for this filter. 
+        /// </summary>
+        public string CspOption
+        {
+            get;
+            private set;
+        } = String.Empty;
+
+        /// <summary>
         /// The UrlFilteringRuleFragment parts that make up this filter. 
         /// </summary>
         public List<UrlFilteringRuleFragment> Parts
@@ -701,7 +710,7 @@ namespace DistillNET
         /// <param name="categoryId">
         /// The category ID of the category this filter belongs to.
         /// </param>
-        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, List<string> applicableDomains, List<string> exceptionDomains, List<string> applicableReferers, List<string> exceptionReferers, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, List<string> applicableDomains, List<string> exceptionDomains, List<string> applicableReferers, List<string> exceptionReferers, string cspOption, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
             Parts = parts;
             Options = options;
@@ -711,6 +720,8 @@ namespace DistillNET
 
             ApplicableReferers = applicableReferers;
             ExceptReferers = exceptionReferers;
+
+            CspOption = cspOption;
         }
 
         /// <summary>
