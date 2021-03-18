@@ -254,7 +254,17 @@ namespace DistillNET
             /// worth investigating at all.
             /// </summary>
             [Obsolete("This option is ignored.")]
-            Ping = (1L << 36)
+            Ping = (1L << 36),
+
+            /// <summary>
+            /// This rule option blocks WebRTC connections opened via RTCPeerConnection instances to ICE servers.
+            /// </summary>
+            WebRtc = (1L << 37),
+
+            /// <summary>
+            /// Exception for WebRTC rule above.
+            /// </summary>
+            ExceptWebRtc = (1L << 38)
         }
 
         /// <summary>

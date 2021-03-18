@@ -93,6 +93,8 @@ namespace DistillNET
             { "~elemhide", UrlFilter.UrlFilterOptions.ExceptElemHide },
             { "other", UrlFilter.UrlFilterOptions.Other },
             { "~other", UrlFilter.UrlFilterOptions.ExceptOther },
+            { "webrtc", UrlFilter.UrlFilterOptions.WebRtc },
+            { "~webrtc", UrlFilter.UrlFilterOptions.ExceptWebRtc },
             #pragma warning disable CS0618 // Type or member is obsolete
             { "object-subrequest", UrlFilter.UrlFilterOptions.ObjectSubrequest },
             { "~object-subrequest", UrlFilter.UrlFilterOptions.ExceptObjectSubrequest },
