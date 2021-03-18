@@ -85,8 +85,6 @@ namespace DistillNET
             { "xmlhttprequest", UrlFilter.UrlFilterOptions.XmlHttpRequest },
             { "~xmlhttprequest", UrlFilter.UrlFilterOptions.ExceptXmlHttpRequest },
             { "websocket", UrlFilter.UrlFilterOptions.Websocket },
-            { "object-subrequest", UrlFilter.UrlFilterOptions.ObjectSubrequest },
-            { "~object-subrequest", UrlFilter.UrlFilterOptions.ExceptObjectSubrequest },
             { "subdocument", UrlFilter.UrlFilterOptions.Subdocument },
             { "~subdocument", UrlFilter.UrlFilterOptions.ExceptSubdocument },
             { "document", UrlFilter.UrlFilterOptions.Document },
@@ -96,6 +94,8 @@ namespace DistillNET
             { "other", UrlFilter.UrlFilterOptions.Other },
             { "~other", UrlFilter.UrlFilterOptions.ExceptOther },
             #pragma warning disable CS0618 // Type or member is obsolete
+            { "object-subrequest", UrlFilter.UrlFilterOptions.ObjectSubrequest },
+            { "~object-subrequest", UrlFilter.UrlFilterOptions.ExceptObjectSubrequest },
             { "media", UrlFilter.UrlFilterOptions.Media },
             { "~media", UrlFilter.UrlFilterOptions.ExceptMedia },
             { "font", UrlFilter.UrlFilterOptions.Font },

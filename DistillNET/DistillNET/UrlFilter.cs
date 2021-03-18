@@ -118,11 +118,13 @@ namespace DistillNET
             /// The rule should apply to requests initiated by browser plugins. Not quite sure how
             /// this is supposed to be different from the Object option.
             /// </summary>
+            [Obsolete("This option is ignored.")]
             ObjectSubrequest = (1L << 16),
 
             /// <summary>
             /// Exception for requests initiated by a browser plugin. 
             /// </summary>
+            [Obsolete("This option is ignored.")]
             ExceptObjectSubrequest = (1L << 17),
 
             /// <summary>
