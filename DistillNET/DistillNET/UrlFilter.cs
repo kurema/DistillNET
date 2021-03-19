@@ -704,6 +704,9 @@ namespace DistillNET
         /// <param name="exceptionReferers">
         /// Referers that the filter rule should not be applied to.
         /// </param>
+        /// <param name="cspOption">
+        /// Content Security Policy to be injected into HTTP responses for requested documents matching the filter.
+        /// </param>
         /// <param name="isException">
         /// Whether or not the filter is an exception, that is to say, a whitelisting filter.
         /// </param>
