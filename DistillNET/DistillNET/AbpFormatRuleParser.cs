@@ -293,9 +293,13 @@ namespace DistillNET
                         continue;
                     }
 
-                    if(allOptions[i].Length > 4 && allOptions[i][0] == 'c' && allOptions[i][3] == '=')
+                    if(allOptions[i][0] == 'c' && allOptions[i][2] == 'p')
                     {
-                        cspOption = allOptions[i].Substring(4);
+                        if(allOptions[i].Length > 4)
+                            cspOption = allOptions[i].Substring(4);
+                        else if(isException)
+                            cspOption = String.Empty; //csp value can be empty in the case of exception rules
+
                         allOptions[i] = string.Empty;
 
                         if(refererOption != null && domainsOption != null)
