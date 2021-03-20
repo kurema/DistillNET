@@ -76,6 +76,9 @@ namespace DistillNET
         /// All domains that this rule is to apply to. Can be null or empty, either if which implies
         /// that this rule applies globally.
         /// </param>
+        /// <param name="exceptionDomains">
+        /// Domains that this rule should not be applied to.
+        /// </param>
         /// <param name="cssSelector">
         /// The raw CSS selector string. Cannot be null, whitespace or empty under certain
         /// conditional compilation flags. See exception reference for more details.
@@ -92,11 +95,16 @@ namespace DistillNET
         /// checks to ensure that it is not null, empty or whitespace. If these checks are performed
         /// and any of those conditions is true, the constructor will throw this exception.
         /// </exception>
-        internal HtmlFilter(string originalRule, List<string> applicableDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal HtmlFilter(string originalRule, List<string> applicableDomains, List<string> exceptionDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
             if (applicableDomains != null && applicableDomains.Count > 0)
             {
                 ApplicableDomains = applicableDomains;
+            }
+
+            if (exceptionDomains != null && exceptionDomains.Count > 0)
+            {
+                ExceptionDomains = exceptionDomains;
             }
 
 #if TE_FILTERING_VERIFY_RULE_DATA

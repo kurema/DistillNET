@@ -215,15 +215,35 @@ namespace DistillNET
         {
             var originalRuleCopy = rule;
 
-            List<string> applicableDomains = null;
+            List<string> applicableDomains = new List<string>();
+            List<string> exceptionDomains = new List<string>();
 
             if(selectorStartOffset > 0)
             {
                 // Whenever the start of the selector rule is not the start of the string, this
                 // indicates that it's a domain-specific CSS selector rule. As such, one or more
                 // domains, separated by a comma character, will preceed the actual CSS selector
-                // rule.
-                applicableDomains = rule.Substring(0, selectorStartOffset).Split(s_optionsDelim, StringSplitOptions.None).ToList();
+                // rule.Exception domains in the list start with tilde, applicable domains don't.
+                var rawDomains = rule.Substring(0, selectorStartOffset).Split(s_optionsDelim, StringSplitOptions.None);
+
+                var domainsLen = rawDomains.Length;
+                for (int i = 0; i < domainsLen; ++i)
+                {
+                    switch (rawDomains[i][0])
+                    {
+                        case '~':
+                            {
+                                exceptionDomains.Add(rawDomains[i].Substring(1));
+                            }
+                            break;
+
+                        default:
+                            {
+                                applicableDomains.Add(rawDomains[i]);
+                            }
+                            break;
+                    }
+                }
             }
 
             // If it's an exception, we need to cut off three characters from the start of the CSS
@@ -231,7 +251,7 @@ namespace DistillNET
             // off only the first two '##' characters.
             rule = rule.Substring(isException ? selectorStartOffset + 3 : selectorStartOffset + 2);
 
-            return new HtmlFilter(originalRuleCopy, applicableDomains, rule, isException, categoryId);
+            return new HtmlFilter(originalRuleCopy, applicableDomains, exceptionDomains, rule, isException, categoryId);
         }
 
         private Filter ParseUrlFilter(string rule, int optionsStartOffset, bool hasOptions, bool isException, short categoryId)
