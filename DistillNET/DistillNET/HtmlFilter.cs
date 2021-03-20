@@ -17,45 +17,45 @@ namespace DistillNET
     public class HtmlFilter : Filter
     {
         /// <summary>
-        /// Gets a list of all referers that this HTML filter rule applies to. In the event that this
-        /// array is empty, the referer field on requests will not be checked.
+        /// Gets a collection of all referers that this HTML filter rule applies to. In the event that this
+        /// collection is empty, the referer field on requests will not be checked.
         /// </summary>
-        public List<string> ApplicableReferers
+        public ICollection<string> ApplicableReferers
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all referers that this HTML filter rule applies to. In the event that this
-        /// array is empty, the referer field on requests will not be checked.
+        /// Gets a collection of all referers that this HTML filter rule applies to. In the event that this
+        /// collection is empty, the referer field on requests will not be checked.
         /// </summary>
-        public List<string> ExceptReferers
+        public ICollection<string> ExceptReferers
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all domains that this HTML filter rule applies to. In the event that this
+        /// Gets a collection of all domains that this HTML filter rule applies to. In the event that this
         /// array is empty, the rule applies globally, to all domains.
         /// </summary>
-        public List<string> ApplicableDomains
+        public ICollection<string> ApplicableDomains
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all domains that this HTML filter should not be applied to. In the event
-        /// that this array is empty, the rule applies either globally, or exclusively to the list of
+        /// Gets a collection of all domains that this HTML filter should not be applied to. In the event
+        /// that this collection is empty, the rule applies either globally, or exclusively to the list of
         /// applicable domains, if that property is not empty.
         /// </summary>
-        public List<string> ExceptionDomains
+        public ICollection<string> ExceptionDomains
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
         /// Gets the raw CSS selector rule string.
@@ -95,17 +95,13 @@ namespace DistillNET
         /// checks to ensure that it is not null, empty or whitespace. If these checks are performed
         /// and any of those conditions is true, the constructor will throw this exception.
         /// </exception>
-        internal HtmlFilter(string originalRule, List<string> applicableDomains, List<string> exceptionDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal HtmlFilter(string originalRule, ICollection<string> applicableDomains, ICollection<string> exceptionDomains, string cssSelector, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
-            if (applicableDomains != null && applicableDomains.Count > 0)
-            {
+            if (applicableDomains != null)
                 ApplicableDomains = applicableDomains;
-            }
 
-            if (exceptionDomains != null && exceptionDomains.Count > 0)
-            {
+            if (exceptionDomains != null)
                 ExceptionDomains = exceptionDomains;
-            }
 
 #if TE_FILTERING_VERIFY_RULE_DATA
             Debug.Assert(!string.IsNullOrEmpty(cssSelector) && !string.IsNullOrWhiteSpace(cssSelector), "Css selector cannot be null, empty or whitespace.");

@@ -597,45 +597,45 @@ namespace DistillNET
         }
 
         /// <summary>
-        /// Gets a list of all referers that this URL filter rule applies to. In the event that
-        /// this array is empty, the referer field on requests will not be checked.
+        /// Gets a collection of all referers that this URL filter rule applies to. In the event that
+        /// this collection is empty, the referer field on requests will not be checked.
         /// </summary>
-        public List<string> ApplicableReferers
+        public ICollection<string> ApplicableReferers
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all referers that this URL filter rule applies to. In the event that
-        /// this array is empty, the referer field on requests will not be checked.
+        /// Gets a collection of all referers that this URL filter rule applies to. In the event that
+        /// this collection is empty, the referer field on requests will not be checked.
         /// </summary>
-        public List<string> ExceptReferers
+        public ICollection<string> ExceptReferers
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all domains that this URL filter rule applies to. In the event that
-        /// this array is empty, the rule applies globally, to all domains.
+        /// Gets a collection of all domains that this URL filter rule applies to. In the event that
+        /// this collection is empty, the rule applies globally, to all domains.
         /// </summary>
-        public List<string> ApplicableDomains
+        public ICollection<string> ApplicableDomains
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets a list of all domains that this URL filter should not be applied to. In the event
-        /// that this array is empty, the rule applies either globally, or exclusively to the list of
+        /// Gets a collection of all domains that this URL filter should not be applied to. In the event
+        /// that this collection is empty, the rule applies either globally, or exclusively to the list of
         /// applicable domains, if that property is not empty.
         /// </summary>
-        public List<string> ExceptionDomains
+        public ICollection<string> ExceptionDomains
         {
             get;
             private set;
-        }
+        } = Array.Empty<string>();
 
         /// <summary>
         /// Gets all options that apply to this filtering rule. 
@@ -713,16 +713,22 @@ namespace DistillNET
         /// <param name="categoryId">
         /// The category ID of the category this filter belongs to.
         /// </param>
-        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, List<string> applicableDomains, List<string> exceptionDomains, List<string> applicableReferers, List<string> exceptionReferers, string cspOption, bool isException, short categoryId) : base(originalRule, isException, categoryId)
+        internal UrlFilter(string originalRule, List<UrlFilteringRuleFragment> parts, UrlFilterOptions options, ICollection<string> applicableDomains, ICollection<string> exceptionDomains, ICollection<string> applicableReferers, ICollection<string> exceptionReferers, string cspOption, bool isException, short categoryId) : base(originalRule, isException, categoryId)
         {
             Parts = parts;
             Options = options;
 
-            ApplicableDomains = applicableDomains;
-            ExceptionDomains = exceptionDomains;
+            if (applicableDomains != null)
+                ApplicableDomains = applicableDomains;
 
-            ApplicableReferers = applicableReferers;
-            ExceptReferers = exceptionReferers;
+            if (exceptionDomains != null)
+                ExceptionDomains = exceptionDomains;
+
+            if (applicableReferers != null)
+                ApplicableReferers = applicableReferers;
+
+            if (exceptionReferers != null)
+                ExceptReferers = exceptionReferers;
 
             CspOption = cspOption;
         }
