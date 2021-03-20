@@ -156,16 +156,13 @@ namespace DistillNET
             // significant difference between exception and standard rules, we need to check for both
             // standard and exception rules here if we come up negative on the first check (standard
             // rule).
-            var cssSelectorStart = rule.LastIndexOfQuick("##");
+            var cssSelectorStart = rule.IndexOfQuick("#@");
             var isCssSelector = cssSelectorStart != -1;
-            if(!isCssSelector)
+            isException = isCssSelector;
+            if (!isCssSelector)
             {
-                cssSelectorStart = rule.LastIndexOfQuick("#@");
-                if(cssSelectorStart != -1)
-                {
-                    isCssSelector = true;
-                    isException = true;
-                }
+                cssSelectorStart = rule.IndexOfQuick("##");
+                isCssSelector = cssSelectorStart != -1;
             }
 
             // Once we've concretely decided that this rule is in fact a CSS selector rule, we need
