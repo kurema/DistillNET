@@ -139,42 +139,70 @@ namespace DistillNET
         /// </exception>
         public Filter ParseAbpFormattedRule(string rule, short categoryId)
         {
-            // If we find a '$' character in this rule, and this rules turns out not to be a CSS
-            // selector, then this is where our rule options start. However, CSS selectors can and
-            // will have this character present, and in this context this character has a whole
-            // different meaning specific to CSS selectors.
-            var optionsStart = rule.LastIndexOfQuick("$");
-            var hasOptions = optionsStart != -1;
+            var isException = false;
+            var isBlockingRule = false;
+            var isElementHidingRule = false;
+            int separator = 0;
 
-            // We'll assume that this is a URL filtering with this initial isException value,
-            // however, we'll need to revise this assumption if the rule turns out to the be a CSS
-            // selector rule. In the case of a CSS selector rule, exceptions are marked by placing an
-            // @ symbol in between the two leading CSS selector pound, aka hashtag, characters.
-            var isException = rule.StartsWithQuick("@@");
+            //First, when the rule is too small it can only be a basic blocking filter.
+            if (rule.Length < 3)
+                isBlockingRule = true;
 
-            // Give the above explanation of the CSS selector rule formats, and how there's a
-            // significant difference between exception and standard rules, we need to check for both
-            // standard and exception rules here if we come up negative on the first check (standard
-            // rule).
-            var cssSelectorStart = rule.IndexOfQuick("#@");
-            var isCssSelector = cssSelectorStart != -1;
-            isException = isCssSelector;
-            if (!isCssSelector)
+            //Second, let's try to guess the type of rule using the first character as a hint.
+            //In the vast majority of cases, the beginning of the rule usually contains a special
+            //character, which alone is sufficient to identify the type of rule.
+            else switch (rule[0])
+                {
+                    case '#':
+                        isElementHidingRule = rule[1] == '#' || (rule[1] == '@' || rule[1] == '?') && rule[2] == '#';
+                        isException = rule[1] == '@' && isElementHidingRule;
+                        break;
+                    case '@':
+                        isBlockingRule = true;
+                        isException = rule[1] == '@';
+                        break;
+                    case '|':
+                    case '-':
+                    case '.':
+                    case '_':
+                    case ':':
+                    case '/':
+                    case '?':
+                    case '[':
+                    case ']':
+                    case '$':
+                    case '&':
+                    case '\'':
+                    case '(':
+                    case ')':
+                    case '*':
+                    case '+':
+                    case ',':
+                    case ';':
+                    case '=':
+                        isBlockingRule = true;
+                        break;
+                }
+
+            //third, when no hint was obtained previously or the beginning of the rule has no special
+            //characters, then we will have to look for the # within the rule.
+            if (isElementHidingRule == isBlockingRule)
             {
-                cssSelectorStart = rule.IndexOfQuick("##");
-                isCssSelector = cssSelectorStart != -1;
+                separator = rule.IndexOfQuick('#', 1);
+                while (separator != -1 && !isElementHidingRule)
+                {
+                    isElementHidingRule = rule[separator + 1] == '#' || (rule[separator + 1] == '@' || rule[separator + 1] == '?') && rule[separator + 2] == '#';
+                    isException = rule[separator] == '@';
+                    if (isElementHidingRule) break;
+                    separator = rule.IndexOfQuick('#', separator + 1);
+                }
             }
 
-            // Once we've concretely decided that this rule is in fact a CSS selector rule, we need
-            // to reevaluate our assumption about whether or not the rule is an exception rule. Up
-            // until this point, this was determined under the assumption that the rule is a URL
-            // filtering rule. We search here for the telltale characters unique to a CSS selector
-            // exception rule.
-            if(isCssSelector)
+            if (isElementHidingRule)
             {
                 try
                 {
-                    return ParseCssSelector(rule, cssSelectorStart, isException, categoryId);
+                    return ParseCssSelector(rule, separator, isException, categoryId);
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -182,9 +210,12 @@ namespace DistillNET
                 }
             }
 
+            separator = rule.LastIndexOfQuick("$");
+            var hasOptions = separator != -1;
+
             try
-            {   
-                return ParseUrlFilter(rule, optionsStart, hasOptions, isException, categoryId);
+            {
+                return ParseUrlFilter(rule, separator, hasOptions, isException, categoryId);
             }
             catch (ArgumentOutOfRangeException)
             {
