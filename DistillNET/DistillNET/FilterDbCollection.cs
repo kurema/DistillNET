@@ -312,10 +312,12 @@ namespace DistillNET
 
                         ++loaded;
 
-                        if(filter.ApplicableDomains.Count > 0)
+                        string firstAnchorDomain = (filter.Parts.FirstOrDefault() as UrlFilter.AnchoredDomainFragment)?.Domain;
+                        if(filter.ApplicableDomains.Count > 0 && !(filter.ApplicableDomains.Count == 1 && firstAnchorDomain == filter.ApplicableDomains.First()))
                         {
                             foreach(var dmn in filter.ApplicableDomains)
-                            {   
+                            {
+                                if(dmn == filter.ApplicableDomains.Last() && firstAnchorDomain == dmn) continue;
                                 cmd.Parameters[0].Value = dmn;
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
