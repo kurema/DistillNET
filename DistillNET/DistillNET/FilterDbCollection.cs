@@ -98,7 +98,7 @@ namespace DistillNET
                 File.Delete(dbAbsolutePath);
             }
 
-            if(cacheOptions == null)
+            if (cacheOptions == null)
             {
                 cacheOptions = new MemoryCacheOptions
                 {
@@ -114,7 +114,7 @@ namespace DistillNET
 
             m_ruleParser = new AbpFormatRuleParser();
 
-            if(useMemory)
+            if (useMemory)
             {
                 var version = typeof(FilterDbCollection).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
                 var rnd = new Random();
@@ -139,7 +139,7 @@ namespace DistillNET
                     Cache = SqliteCacheMode.Shared,
                     DataSource = dbAbsolutePath
                 };
-                m_connection = new SqliteConnection(cb.ToString());                
+                m_connection = new SqliteConnection(cb.ToString());
             }
 
             //m_connection. = SQLiteConnectionFlags.UseConnectionPool | SQLiteConnectionFlags.NoConvertSettings | SQLiteConnectionFlags.NoVerifyTypeAffinity;            
@@ -158,7 +158,7 @@ namespace DistillNET
         /// </summary>
         private void ConfigureDatabase()
         {
-            using(var cmd = m_connection.CreateCommand())
+            using (var cmd = m_connection.CreateCommand())
             {
                 cmd.CommandText = "PRAGMA cache_size=-65536;";
                 cmd.ExecuteNonQuery();
@@ -206,7 +206,7 @@ namespace DistillNET
         /// </summary>
         private void CreateTables()
         {
-            using(var tsx = m_connection.BeginTransaction())
+            using (var tsx = m_connection.BeginTransaction())
             using (var command = m_connection.CreateCommand())
             {
                 command.CommandText = "CREATE TABLE IF NOT EXISTS UrlFiltersIndex (Domains VARCHAR(255), CategoryId INT16, IsWhitelist BOOL, Source TEXT)";
@@ -221,7 +221,7 @@ namespace DistillNET
         /// </summary>
         private void CreatedIndexes()
         {
-            using(var command = m_connection.CreateCommand())
+            using (var command = m_connection.CreateCommand())
             {
                 command.CommandText = "CREATE INDEX IF NOT EXISTS domain_index ON UrlFiltersIndex (Domains)";
                 command.ExecuteNonQuery();
@@ -255,7 +255,7 @@ namespace DistillNET
         private void RecreateCache()
         {
             if (m_cache != null)
-            {   
+            {
                 m_cache.Dispose();
             }
 
@@ -283,10 +283,10 @@ namespace DistillNET
 
             int loaded = 0, failed = 0;
 
-            using(var transaction = m_connection.BeginTransaction())
+            using (var transaction = m_connection.BeginTransaction())
             {
-                using(var cmd = m_connection.CreateCommand())
-                {   
+                using (var cmd = m_connection.CreateCommand())
+                {
                     cmd.CommandText = "INSERT INTO UrlFiltersIndex VALUES ($domain, $categoryId, $isWhitelist, $source)";
                     var domainParam = new SqliteParameter("$domain", DbType.String);
                     var categoryIdParam = new SqliteParameter("$categoryId", DbType.Int16);
@@ -299,8 +299,8 @@ namespace DistillNET
 
                     cmd.Prepare();
 
-                    var len = rawRuleStrings.Length;                    
-                    for(int i = 0; i < len; ++i)
+                    var len = rawRuleStrings.Length;
+                    for (int i = 0; i < len; ++i)
                     {
                         rawRuleStrings[i] = rawRuleStrings[i].TrimQuick();
 
@@ -312,10 +312,11 @@ namespace DistillNET
 
                         ++loaded;
 
-                        if(filter.ApplicableDomains.Count > 0)
+                        if (filter.ApplicableDomains.Count > 0
+                            && !(filter.ApplicableDomains.Count == 1 && filter.Parts.Count > 0 && (filter.Parts[0] as UrlFilter.AnchoredDomainFragment)?.Domain == filter.ApplicableDomains.First()))
                         {
-                            foreach(var dmn in filter.ApplicableDomains)
-                            {   
+                            foreach (var dmn in filter.ApplicableDomains)
+                            {
                                 cmd.Parameters[0].Value = dmn;
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
@@ -361,9 +362,9 @@ namespace DistillNET
 
             int loaded = 0, failed = 0;
 
-            using(var transaction = m_connection.BeginTransaction())
+            using (var transaction = m_connection.BeginTransaction())
             {
-                using(var cmd = m_connection.CreateCommand())
+                using (var cmd = m_connection.CreateCommand())
                 {
                     cmd.CommandText = "INSERT INTO UrlFiltersIndex VALUES ($domain, $categoryId, $isWhitelist, $source)";
                     var domainParam = new SqliteParameter("$domain", DbType.String);
@@ -378,10 +379,10 @@ namespace DistillNET
                     cmd.Prepare();
 
                     string line = null;
-                    using(var sw = new StreamReader(rawRulesStream))
-                    while((line = sw.ReadLine()) != null)
-                    {
-                        line = line.TrimQuick();
+                    using (var sw = new StreamReader(rawRulesStream))
+                        while ((line = sw.ReadLine()) != null)
+                        {
+                            line = line.TrimQuick();
 
                             if (!(m_ruleParser.ParseAbpFormattedRule(line, categoryId) is UrlFilter filter))
                             {
@@ -391,26 +392,26 @@ namespace DistillNET
 
                             ++loaded;
 
-                        if(filter.ApplicableDomains.Count > 0)
-                        {
-                            foreach(var dmn in filter.ApplicableDomains)
+                            if (filter.ApplicableDomains.Count > 0)
                             {
-                                cmd.Parameters[0].Value = dmn;
+                                foreach (var dmn in filter.ApplicableDomains)
+                                {
+                                    cmd.Parameters[0].Value = dmn;
+                                    cmd.Parameters[1].Value = categoryId;
+                                    cmd.Parameters[2].Value = filter.IsException;
+                                    cmd.Parameters[3].Value = line;
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                            else
+                            {
+                                cmd.Parameters[0].Value = m_globalKey;
                                 cmd.Parameters[1].Value = categoryId;
                                 cmd.Parameters[2].Value = filter.IsException;
                                 cmd.Parameters[3].Value = line;
                                 cmd.ExecuteNonQuery();
                             }
                         }
-                        else
-                        {
-                            cmd.Parameters[0].Value = m_globalKey;
-                            cmd.Parameters[1].Value = categoryId;
-                            cmd.Parameters[2].Value = filter.IsException;
-                            cmd.Parameters[3].Value = line;
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
                 }
 
                 transaction.Commit();
@@ -481,26 +482,26 @@ namespace DistillNET
             retVal = new List<UrlFilter>();
 
             var allPossibleVariations = GetAllPossibleSubdomains(domain);
-            
-            using(var myConn = new SqliteConnection(m_connection.ConnectionString))
+
+            using (var myConn = new SqliteConnection(m_connection.ConnectionString))
             {
                 myConn.Open();
 
-                using(var cmd = myConn.CreateCommand())
+                using (var cmd = myConn.CreateCommand())
                 {
-                    switch(isWhitelist)
+                    switch (isWhitelist)
                     {
                         case true:
-                        {
-                            cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 1";
-                        }
-                        break;
+                            {
+                                cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 1";
+                            }
+                            break;
 
                         default:
-                        {
-                            cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 0";
-                        }
-                        break;
+                            {
+                                cmd.CommandText = @"SELECT * from UrlFiltersIndex where Domains = $domainId AND IsWhitelist = 0";
+                            }
+                            break;
                     }
 
                     var domainParam = new SqliteParameter("$domainId", DbType.String);
@@ -512,9 +513,9 @@ namespace DistillNET
                     {
                         cmd.Parameters[0].Value = sub;
 
-                        using(var reader = cmd.ExecuteReader())
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            while(reader.Read())
+                            while (reader.Read())
                             {
                                 short catId = reader.GetInt16(1);
                                 var newRule = (UrlFilter)m_ruleParser.ParseAbpFormattedRule(reader.GetString(3), catId);
@@ -540,7 +541,7 @@ namespace DistillNET
             var retVal = new List<string>() { inputDomain };
             int subPos = inputDomain.IndexOfQuick('.');
 
-            while(subPos != -1)
+            while (subPos != -1)
             {
                 inputDomain = inputDomain.Substring(subPos + 1);
                 retVal.Add(inputDomain);
@@ -561,11 +562,11 @@ namespace DistillNET
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-            if(!disposedValue)
+            if (!disposedValue)
             {
-                if(disposing)
+                if (disposing)
                 {
-                    if(m_connection != null)
+                    if (m_connection != null)
                     {
                         m_connection.Close();
                         m_connection = null;
